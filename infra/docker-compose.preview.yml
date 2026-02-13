@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: gdeimp-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong!Passw0rd"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+
+  redis:
+    image: redis:7-alpine
+    container_name: gdeimp-redis
+    ports:
+      - "6379:6379"
+
+  identity-api:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: gdeimp-identity-api
+    command: ["/bin/sh", "-c", "echo 'Identity API placeholder' && sleep infinity"]
+    depends_on:
+      - sqlserver
+      - redis
+
+  projects-api:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: gdeimp-projects-api
+    command: ["/bin/sh", "-c", "echo 'Projects API placeholder' && sleep infinity"]
+    depends_on:
+      - sqlserver
+      - redis
+
+  gateway:
+    image: nginx:stable-alpine
+    container_name: gdeimp-gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - identity-api
+      - projects-api
+
+volumes:
+  sql_data:
